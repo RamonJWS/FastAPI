@@ -1,15 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="90ec47ec-f1d6-47ec-8cff-72906f0396b7" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/GET/path_parameters.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/GET/predefined_path.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/GET/query_and_path.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/GET/query_parameters.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/simple_single_endpoint/call_api.py" beforeDir="false" afterPath="$PROJECT_DIR$/simple_single_endpoint/call_api.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/simple_single_endpoint/hello_world.py" beforeDir="false" afterPath="$PROJECT_DIR$/simple_single_endpoint/hello_world.py" afterDir="false" />
-    </list>
+    <list default="true" id="90ec47ec-f1d6-47ec-8cff-72906f0396b7" name="Changes" comment="" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
