@@ -2,11 +2,12 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="90ec47ec-f1d6-47ec-8cff-72906f0396b7" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/Operation_Description/config.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Operation_Description/status_codes.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Operation_Description/tags.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/README.md" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Routers/main.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Routers/router/blog_get.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Routers/router/blog_posts.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Routers/routers_explained.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/requirements.txt" beforeDir="false" afterPath="$PROJECT_DIR$/requirements.txt" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -27,7 +28,9 @@
     <option name="stateVersion" value="1" />
   </component>
   <component name="ProjectId" id="2IjNUrnxNcaEfUE85dmDYixW17j" />
-  <component name="ProjectLevelVcsManager" settingsEditedManually="true" />
+  <component name="ProjectLevelVcsManager" settingsEditedManually="true">
+    <ConfirmationsSetting value="2" id="Add" />
+  </component>
   <component name="ProjectViewState">
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
