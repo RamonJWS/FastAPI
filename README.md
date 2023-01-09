@@ -188,3 +188,42 @@ app.include_router(blog_get.router)
 app.include_router(blog_posts.router)
 ```
 ## <ins>Database with SQLAlchemy</ins>
+### Dependencies
+- A way to allow a function to depend on another function.
+- Allow for importing of functionality.
+
+Below I have defined a function `required_parameter` in `blog_posts.py`, I can then import this function into
+`blog_get.py` and use this as a argument in the functions there with `Depends` from FastAPI.
+```python
+# blog_post.py
+def required_functionality():
+    return {"message": "Learning FastAPI is important"}
+```
+```python
+# blog_get.py
+from Routers.router.blog_posts import required_functionality
+
+@router.get("/all")
+def get_all_blogs(page=1, page_size: Optional[int] = None, req_parameters: dict = Depends(required_functionality)):
+    return {"messages": f"All {page_size} blogs on page {page}", "req": req_parameters}
+```
+An example of where this is used in the wild is for endpoint authentication.
+
+### Databases in FastAPI
+
+
+### Create Databases and Tables
+
+
+### Write Data
+
+
+### Create and Read
+
+
+### Update and Delete
+
+
+### Relationships
+
+
