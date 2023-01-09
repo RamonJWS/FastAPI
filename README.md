@@ -125,8 +125,43 @@ def create_comment(blog: BlogModel,
 Request URL: ```http://127.0.0.1:8000/blog/new/23/comment?version=1.1&version=1.2&version=1.2.1```
 
 ### Number Validators
+This is used to validate numbers as either path, body or query parameters. There are 4 main validations for numbers: 
+`>=, >, <=, <`, this can be seen using the `Path` parameter below:
+```python
+@router.post("/new/{id}/comment/{comment_id}")
+def create_comment(blog: BlogModel,
+                   id: int,
+                   comment_title: ...,
+                   content: str = ...,
+                   version: ...,
+                   comment_id: int = Path(None, gt=5, le=10)):
+    return {
+        "blog": blog,
+        "id": id,
+        "comment_title": comment_title,
+        "content": content,
+        "version": version,
+        "comment_id": comment_id
+    }
+```
 
 ### Complex Subtypes
+This can be used to define the type of data in the request body. The usualy suspects can be used e.g. `Dict, List,
+Optional`, more complex structures can be used also like models inside the model:
+```python
+class Image(BaseModel):
+    url: str
+    alias: str
+    
+class BlogModel(BaseModel):
+    title: str
+    content: str
+    published: Optional[bool] = True
+    tags: List[str] = []
+    metadata: Dict[str, str] = {"key1": "val1"}
+    image: Optional[Image] = None
+```
+The last parameter is an optional one of type Image defined above.
 
 ## <ins>Routers</ins>
 Routers are used to structure API code into different files and components. e.g. in Routers/main.py I have split
@@ -152,3 +187,4 @@ app = FastAPI()
 app.include_router(blog_get.router)
 app.include_router(blog_posts.router)
 ```
+## <ins>Database with SQLAlchemy</ins>
