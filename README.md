@@ -189,7 +189,9 @@ app.include_router(blog_posts.router)
 ```
 ## <ins>Database with SQLAlchemy</ins>
 ### Dependencies
+- Often used to share database connections, enforce security, authentication, and roles.
 - A way to allow a function to depend on another function.
+- Allows for seamless import functionality (write function once) 
 - Allow for importing of functionality.
 
 Below I have defined a function `required_parameter` in `blog_posts.py`, I can then import this function into
@@ -199,9 +201,11 @@ Below I have defined a function `required_parameter` in `blog_posts.py`, I can t
 def required_functionality():
     return {"message": "Learning FastAPI is important"}
 ```
+
 ```python
 # blog_get.py
-from Routers.router.blog_posts import required_functionality
+from router.blog_posts import required_functionality
+
 
 @router.get("/all")
 def get_all_blogs(page=1, page_size: Optional[int] = None, req_parameters: dict = Depends(required_functionality)):
@@ -210,12 +214,34 @@ def get_all_blogs(page=1, page_size: Optional[int] = None, req_parameters: dict 
 An example of where this is used in the wild is for endpoint authentication.
 
 ### Databases in FastAPI
+FastAPI can work with any relational database (MySQL, Oracle, etc.). </br>
+With these databases I'm going to use a ORM (object relational mapper) this allows me to convert SQL to a more pythonic
+syntax (it also requires less code), SQLAlchemy will be used for this.
 
+![My Image](/rm_images/system.PNG)
+The above is a diagram of a user creating a profile on our application.
+- Schema is the accepted/required data the user will pass to us (email, password, username)
+- Model is our conversion of this data into a usable/secure form that our ORM can use for inserting into the database.
 
 ### Create Databases and Tables
+To create a database and create a connection to this database we can use the boiler plate code in `database.py` </br>
+Once this has been created we can define models that our database will use (I'm using sqllite here with TablePlus
+as a viewer). Below is an example of a model for creating user information:
+```python
+from db.database import Base
+from sqlalchemy import Column
+from sqlalchemy.sql.sqltypes import Integer, String
 
-
+class DbUser(Base):
+    __tablename__ = "users"
+    id = Column(Integer, primary_key=True, index=True)
+    username = Column(String)
+    email = Column(String)
+    password = Column(String)
+```
 ### Write Data
+We have created a db, the db connection, and the model. We now need to create the schema, the ORM functionality,
+and the API functionality. </br>
 
 
 ### Create and Read
