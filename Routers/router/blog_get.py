@@ -1,7 +1,12 @@
+import os
+import sys
+fpath = os.path.dirname(__file__)
+sys.path.append(fpath)
+
 from fastapi import APIRouter, status, Response, Depends
 from typing import Optional
 from enum import Enum
-from router.blog_posts import required_functionality
+from blog_posts import required_functionality
 
 class BlogType(str, Enum):
     short = "short"
