@@ -242,6 +242,90 @@ class DbUser(Base):
 ### Write Data
 We have created a db, the db connection, and the model. We now need to create the schema, the ORM functionality,
 and the API functionality. </br>
+**How it works**:
+- The router connects the user endpoint to the main app (user requests found in `user.py`)
+```python
+# user.py
+@router.post('/', response_model=UserDisplay)
+def create_user(request: UserBase,
+                db: Session = Depends(get_db)):
+    return db_user.create_user(db, request)
+```
+- Inside `user.py` a POST method is used with the request body that is of type `UserBase`, this is a schema that tells
+FastAPI what format the request body should be in:
+```python
+# schemas.py
+class UserBase(BaseModel):
+    username: str
+    email: str
+    password: str
+```
+- Inside `create_user` function there is also a db argument which is mainly boilerplate code for creating a sqlalchemy
+session and opening and closing the db connection (see `database.py` for more details).
+- The user now creates an account with the following credentials:
+```json
+{
+  "username": "EvilerEarth",
+  "email": "email@gmail.com",
+  "password": "password123"
+}
+```
+- This is converted into a pydantic model `UserBase` and then passed to the `db_user.create_user(db, request)` function:
+```python
+# db_user.py
+def create_user(db: Session, request: UserBase):
+    # dont need id as this is auto generated as primary key in models.py
+    new_user = DbUser(
+        username=request.username,
+        email=request.email,
+        password=Hash.bcrypt(request.password)
+    )
+    db.add(new_user)
+    db.commit()
+    # need to refresh because of id being primary key which is auto created for us.
+    db.refresh(new_user)
+    return new_user
+```
+- The pydantic model is then converted to sqlalchemys ORM model `DbUser`:
+```python
+# models.py
+class DbUser(Base):
+    __tablename__ = "users"
+    id = Column(Integer, primary_key=True, index=True)
+    username = Column(String)
+    email = Column(String)
+    password = Column(String)
+```
+- This model creates the table with name "users" and assigns the pydantic models values to respective columns in the db
+. Note that `id` was not in the pydantic model, it is automatically generated here as a primary key.
+- Back to `db_user.py`. `password` is encrypted using hash (boilerplate code for this). The new_user (ORM model) is then
+passed to the db, committed, and then the db is refreshed (refresh only needed due to `id` column).
+- The new_user is then retured from `db_user.py` as an ORM model. In `user.py` in the POST decorator we have specified an
+argument `response_model=UserDisplay`. This is used dictate what is passed back in the response body:
+```python
+# schemas.py
+class UserDisplay(BaseModel):
+    username: str
+    email: str
+
+    class Config:
+        orm_mode = True
+```
+- `class Config` is pydantic code that allows us to convert from ORM model to pydantic (which then converts to json).
+The following response body is returned:
+```json
+{
+  "username": "EvilerEarth",
+  "email": "email@gmail.com"
+}
+```
+Inside the database we can now see the information with the hashed password! Im using **TablePlus** to view the sqlite
+db.
+
+![My Image](/rm_images/create_user.PNG)
+
+
+
 
 
 ### Create and Read
