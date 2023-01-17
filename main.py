@@ -16,4 +16,5 @@ app.include_router(user.router)
 def index():
     return {'message': 'Hello!'}
 
+# this creates the db, only created when the db doesn't exist already.
 models.Base.metadata.create_all(engine)

@@ -15,3 +15,10 @@ def create_user(db: Session, request: UserBase):
     # need to refresh because of id being primary key which is auto created for us.
     db.refresh(new_user)
     return new_user
+
+def get_all_users(db: Session):
+    return db.query(DbUser).all()
+
+
+def get_one_user(id: int, db: Session):
+    return db.query(DbUser).filter(DbUser.id == id).first()

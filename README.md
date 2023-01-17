@@ -301,7 +301,7 @@ class DbUser(Base):
 - Back to `db_user.py`. `password` is encrypted using hash (boilerplate code for this). The new_user (ORM model) is then
 passed to the db, committed, and then the db is refreshed (refresh only needed due to `id` column).
 - The new_user is then retured from `db_user.py` as an ORM model. In `user.py` in the POST decorator we have specified an
-argument `response_model=UserDisplay`. This is used dictate what is passed back in the response body:
+argument `response_model=UserDisplay`. This is used to dictate what is passed back in the response body:
 ```python
 # schemas.py
 class UserDisplay(BaseModel):
@@ -324,11 +324,39 @@ db.
 
 ![My Image](/rm_images/create_user.PNG)
 
+### Read
+- Going to read data from an entire table and a single row of data. </br>
 
+To read **ALL** users: We first create a query on the database model 
+```python
+# db_user.py
+def get_all_users(db: Session):
+    return db.query(DbUser).all()
+```
+We can then define the endpoint: here we dont want to return all user information just account name and email so we use 
+`UserDisplay` response, this will be a list of json. We pass the db session to the `get_all_users` function defined in
+`db_user.py`.
+```python
+# user.py
+@router.get("/", response_model=List[UserDisplay])
+def get_all_users(db: Session = Depends(get_db)):
+    return db_user.get_all_users(db)
+```
+Easy! </br>
 
-
-
-### Create and Read
+To read **ONE** user: we query the same table but filter it on id and return the first row found.
+```python
+# db_user.py
+def get_one_user(id: int, db: Session):
+    return db.query(DbUser).filter(DbUser.id == id).first()
+```
+Same as before we define the endpoint: No need for `List` as we return only one element. A path parameter is used for 
+selection of users.
+```python
+@router.get("/{id}", response_model=UserDisplay)
+def get_one_user(id: int, db: Session = Depends(get_db)):
+    return db_user.get_one_user(id, db)
+```
 
 
 ### Update and Delete
