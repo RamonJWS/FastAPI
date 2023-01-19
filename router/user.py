@@ -26,7 +26,12 @@ def get_one_user(id: int, db: Session = Depends(get_db)):
     return db_user.get_one_user(id, db)
 
 # update user
+@router.put("/{id}/update", response_model=UserDisplay)
+def update_username(request: UserBase, id: int, db: Session = Depends(get_db)):
+    return db_user.update_user(request, db, id)
 
 # delete user
-
+@router.delete("/{id}/delete")
+def delete_user(id: int, db: Session = Depends(get_db)):
+    return db_user.delete_user(db, id)
 

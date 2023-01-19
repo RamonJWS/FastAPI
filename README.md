@@ -353,14 +353,56 @@ def get_one_user(id: int, db: Session):
 Same as before we define the endpoint: No need for `List` as we return only one element. A path parameter is used for 
 selection of users.
 ```python
+# user.py
 @router.get("/{id}", response_model=UserDisplay)
 def get_one_user(id: int, db: Session = Depends(get_db)):
     return db_user.get_one_user(id, db)
 ```
 
-
 ### Update and Delete
-
+**Update**</br>
+To update a value in the database we need to use a `PUT` request. We also need to define the function that will handle
+the db functionality: Below the functionality is we want to be able to update any or all of the users
+data, we do this by filtering on the id.
+```python
+# db_user.py
+def update_user(request: UserBase, db: Session, id: int):
+    user = db.query(DbUser).filter(DbUser.id == id)
+    user.update({
+        DbUser.username: request.username,
+        DbUser.email: request.email,
+        DbUser.password: Hash.bcrypt(request.password)
+    })
+    db.commit()
+    return db.query(DbUser).filter(DbUser.id == id).first()
+```
+We pass in the fastapi model `UserBase` which is a pydantic model, db which is the database connection, and the id of 
+the user. We get the data from the correct table and store it in the `user` variable. Next we update `user`'s values 
+with our request body from fastapi (dont forget to hash the new/old password!). Then commit this to the db, and finally
+return the new users information to fastapi which will create the request response:
+```python
+# user.py
+@router.put("/{id}/update", response_model=UserDisplay)
+def update_username(request: UserBase, id: int, db: Session = Depends(get_db)):
+    return db_user.update_user(request, db, id)
+```
+**Delete**</br>
+To delete a user from the db (we should probably check auth, more on that later) its a similar process just using 
+fastapis delete method and some new but simple db methods:
+```python
+# db_user.py
+def delete_user(db: Session, id: int):
+    user = db.query(DbUser).filter(DbUser.id == id).first()
+    db.delete(user)
+    db.commit()
+    return f"User with id: {id} has been deleted!"
+```
+```python
+# user.py
+@router.delete("/{id}/delete")
+def delete_user(id: int, db: Session = Depends(get_db)):
+    return db_user.delete_user(db, id)
+```
 
 ### Relationships
 
