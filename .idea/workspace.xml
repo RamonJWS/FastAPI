@@ -2,14 +2,12 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="90ec47ec-f1d6-47ec-8cff-72906f0396b7" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/db/db_article.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/router/article.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/exceptions.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/README.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/db/models.py" beforeDir="false" afterPath="$PROJECT_DIR$/db/models.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/fastapi-practice.db" beforeDir="false" afterPath="$PROJECT_DIR$/fastapi-practice.db" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/db/db_article.py" beforeDir="false" afterPath="$PROJECT_DIR$/db/db_article.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/db/db_user.py" beforeDir="false" afterPath="$PROJECT_DIR$/db/db_user.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/main.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/schemas.py" beforeDir="false" afterPath="$PROJECT_DIR$/schemas.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />

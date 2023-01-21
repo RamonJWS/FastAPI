@@ -2,6 +2,7 @@ from sqlalchemy.orm.session import Session
 from schemas import UserBase
 from db.models import DbUser
 from db.hash import Hash
+from fastapi import HTTPException, status
 
 def create_user(db: Session, request: UserBase):
     # dont need id as this is auto generated as primary key in models.py
@@ -17,15 +18,23 @@ def create_user(db: Session, request: UserBase):
     return new_user
 
 def get_all_users(db: Session):
+    all_users = db.query(DbUser).all()
+    if not all_users:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"No users found!")
     return db.query(DbUser).all()
 
 
 def get_one_user(id: int, db: Session):
-    return db.query(DbUser).filter(DbUser.id == id).first()
+    user = db.query(DbUser).filter(DbUser.id == id).first()
+    if not user:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"User with id: {id} not found")
+    return user
 
 
 def update_user(request: UserBase, db: Session, id: int):
     user = db.query(DbUser).filter(DbUser.id == id)
+    if not user.first():
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"User with id: {id} not found")
     user.update({
         DbUser.username: request.username,
         DbUser.email: request.email,
@@ -37,6 +46,8 @@ def update_user(request: UserBase, db: Session, id: int):
 
 def delete_user(db: Session, id: int):
     user = db.query(DbUser).filter(DbUser.id == id).first()
+    if not user:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"User with id: {id} not found")
     db.delete(user)
     db.commit()
     return f"User with id: {id} has been deleted!"

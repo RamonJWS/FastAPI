@@ -429,7 +429,7 @@ class DbArticle(Base):
 We want to be able to create an article that is associated with a user. When we create an article (POST) the response 
 body should contain information about the article and the user:
 ```json
-# request body:
+// request body:
 {
   "title": "The end",
   "content": "This is the end of things! I will not pay my bills any longer.",
@@ -437,7 +437,7 @@ body should contain information about the article and the user:
   "creator_id": 1
 }
 
-# response body:
+// response body:
 {
   "title": "The end",
   "content": "This is the end of things! I will not pay my bills any longer.",
@@ -452,7 +452,7 @@ The response body for GET article will be the same as above. We also want this t
 all the articles created by the user will also be returned.
 GET user:
 ```json
-# parameter id = 1
+// parameter id = 1
 {
   "username": "EvilerEarth",
   "email": "ee@gmail.com",
@@ -520,3 +520,65 @@ class UserDisplay(BaseModel):
 ```
 Above is a very similar but now we could return many articles (one-to-many). See the `List[Article]` part of 
 the code.
+
+## <ins>General API Knowledge</ins>
+### Exceptions: </br>
+HTTP status Codes:
+- 1XX: Informational
+- 2XX: Success
+- 3XX: Redirection
+- 4XX: Client Error
+- 5XX: Server Error
+<br/>\
+To raise exceptions in the app we can use fastapi's built in `HTTPException`:
+```python
+# db_article.py
+def get_article(db: Session, id: int):
+    article = db.query(DbArticle).filter(DbArticle.id == id).first()
+    if not article:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Article with id: {id} not found")
+    return article
+```
+Its also possible to create custom exceptions e.g. stop people putting emails into their articles.
+- create a simple class to store the exception message
+- raise the custom exception is content of article being created contains emails (simple regex for emails).
+- Just doing the two above points would raise a 500 error which is unspecific.
+- create an app exception handler in the main app module.
+```python
+# exceptions.py
+class EmailException(Exception):
+    def __init__(self, message: str):
+        self.message = message
+```
+```python
+# db_article.py
+def create_article(db: Session, request: ArticleBase):
+    list_of_emails = re.findall(r'[\w.+-]+@[\w-]+\.[\w.-]+', request.content)
+    if list_of_emails:
+        raise EmailException(f"Content contains email(s): {', '.join(list_of_emails)}")
+    ...
+```
+```python
+# main.py
+@app.exception_handler(EmailException)
+def email_exception_handler(request: Request, exc: EmailException):
+    return JSONResponse(
+        status_code=418,
+        content={'detail': exc.message}
+    )
+```
+```json
+/ request body:
+{
+  "title": "string",
+  "content": "email@gmail.com, another one: hello@yahoo.com",
+  "published": true,
+  "creator_id": 0
+}
+        
+/ response body: 418 Error: I'm a Teapot
+{
+  "detail": "Content contains email(s): email@gmail.com, hello@yahoo.com"
+}
+
+```
