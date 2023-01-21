@@ -405,5 +405,118 @@ def delete_user(id: int, db: Session = Depends(get_db)):
 ```
 
 ### Relationships
+In this section I created a one to many relationship between the users and articles tables. Using sqlalchemy we define 
+a foriegn key in the child database (the db with many) pointing to the primary key in the parent db (the db with
+one). The relationship connection is then created: </br>
+```python
+class DbUser(Base):
+    __tablename__ = "users"
+    id = Column(Integer, primary_key=True, index=True)
+    username = Column(String)
+    email = Column(String)
+    password = Column(String)
+    items = relationship("DbArticle", back_populates="user")
 
+class DbArticle(Base):
+    __tablename__ = "articles"
+    id = Column(Integer, primary_key=True, index=True)
+    title = Column(String)
+    content = Column(String)
+    published = Column(Boolean)
+    user_id = Column(Integer, ForeignKey("users.id"))
+    user = relationship("DbUser", back_populates="items")
+```
+We want to be able to create an article that is associated with a user. When we create an article (POST) the response 
+body should contain information about the article and the user:
+```json
+# request body:
+{
+  "title": "The end",
+  "content": "This is the end of things! I will not pay my bills any longer.",
+  "published": true,
+  "creator_id": 1
+}
 
+# response body:
+{
+  "title": "The end",
+  "content": "This is the end of things! I will not pay my bills any longer.",
+  "published": true,
+  "user": {
+    "id": 1,
+    "username": "EvilerEarth"
+  }
+}
+```
+The response body for GET article will be the same as above. We also want this to work when we call users, where
+all the articles created by the user will also be returned.
+GET user:
+```json
+# parameter id = 1
+{
+  "username": "EvilerEarth",
+  "email": "ee@gmail.com",
+  "items": [
+    {
+      "title": "The end",
+      "content": "This is the end of things! I will not pay my bills any longer.",
+      "published": true
+    }
+  ]
+}
+```
+I'm not going to go into detail about the backend sql queries (seen in `db_article.py`) because they're very similar to 
+`db_users.py`. The main difference however is in the pydantic schemas, as these can now take into account the
+relationships between the tables, cool right! </br> </br>
+**Articles**: 
+```python
+# schemas.py
+class ArticleBase(BaseModel):
+    title: str
+    content: str
+    published: bool
+    creator_id: int
+    
+class User(BaseModel):
+    id: int
+    username: str
+    class Config:
+        orm_mode = True
+
+class ArticleDisplay(BaseModel):
+    title: str
+    content: str
+    published: bool
+    user: User
+    class Config:
+        orm_mode = True
+```
+The request body expects an article which has a title, content (the text), if its published, and the creator_id. This 
+can all be seen in the `ArticleBase` class. The response body from this article creation then includes the title, 
+content, published, and `user`. Here `user` is part of the relationship we set up in the sqlalchemy models, and allows
+for the `User` class to be used which returns information about the user who created the article. Note how we're
+only returning one user not a list, this is because there is only one user (one-to-many)</br> </br>
+**User**:
+```python
+# schemas.py
+class Article(BaseModel):
+    title: str
+    content: str
+    published: bool
+    class Config:
+        orm_mode = True
+
+class UserBase(BaseModel):
+    username: str
+    email: str
+    password: str
+
+class UserDisplay(BaseModel):
+    username: str
+    email: str
+    items: List[Article] = []
+    class Config:
+        orm_mode = True
+```
+Above is a very similar but now we could return many articles (one-to-many). See the `List[Article]` part of 
+the code.
