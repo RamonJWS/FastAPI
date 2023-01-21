@@ -428,8 +428,8 @@ class DbArticle(Base):
 ```
 We want to be able to create an article that is associated with a user. When we create an article (POST) the response 
 body should contain information about the article and the user:
-```json
-// request body:
+```python
+# request body:
 {
   "title": "The end",
   "content": "This is the end of things! I will not pay my bills any longer.",
@@ -437,7 +437,7 @@ body should contain information about the article and the user:
   "creator_id": 1
 }
 
-// response body:
+# response body:
 {
   "title": "The end",
   "content": "This is the end of things! I will not pay my bills any longer.",
@@ -451,8 +451,8 @@ body should contain information about the article and the user:
 The response body for GET article will be the same as above. We also want this to work when we call users, where
 all the articles created by the user will also be returned.
 GET user:
-```json
-// parameter id = 1
+```python
+# parameter id = 1
 {
   "username": "EvilerEarth",
   "email": "ee@gmail.com",
@@ -567,8 +567,8 @@ def email_exception_handler(request: Request, exc: EmailException):
         content={'detail': exc.message}
     )
 ```
-```json
-/ request body:
+```python
+# request body:
 {
   "title": "string",
   "content": "email@gmail.com, another one: hello@yahoo.com",
@@ -576,7 +576,7 @@ def email_exception_handler(request: Request, exc: EmailException):
   "creator_id": 0
 }
         
-/ response body: 418 Error: I'm a Teapot
+# response body: 418 Error: I'm a Teapot
 {
   "detail": "Content contains email(s): email@gmail.com, hello@yahoo.com"
 }
