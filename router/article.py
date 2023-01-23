@@ -1,6 +1,4 @@
-from fastapi import APIRouter, Query, Body, Path, Depends
-from pydantic import BaseModel
-from typing import Optional, List, Dict
+from fastapi import APIRouter, Depends
 from schemas import ArticleBase, ArticleDisplay
 from sqlalchemy.orm.session import Session
 from db import db_article

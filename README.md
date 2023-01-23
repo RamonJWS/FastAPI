@@ -539,6 +539,7 @@ def get_article(db: Session, id: int):
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Article with id: {id} not found")
     return article
 ```
+### Custome Exceptions </br>
 Its also possible to create custom exceptions e.g. stop people putting emails into their articles.
 - create a simple class to store the exception message
 - raise the custom exception is content of article being created contains emails (simple regex for emails).
@@ -582,3 +583,68 @@ def email_exception_handler(request: Request, exc: EmailException):
 }
 
 ```
+### Custom Response:
+The response is just what the request returns e.g. a pydantic model, a database model, dict, etc. </br>
+We can create custom response objects to meet more specific needs, the downside of this is that there is not automatic
+data conversion. </br>
+**Why use Custom Responses**: </br>
+- add meta data e.g. headers and cookies.
+- can return different types of responses (not just json) e.g. images, plain text, html, files, streaming!
+- complex decisional logic, the response can depend on multiple factors. e.g. return a xml or csv depending on the 
+situation.
+- better documentation, more information about the data. </br>
+
+Below is an example where depending on a condition different datatypes can be returned, html or plain text.
+```python
+# product.py
+from fastapi.responses import Response, HTMLResponse, PlainTextResponse
+products = ['watch', 'camera', 'phone']
+
+@router.get('/{id}')
+def get_product(id: int):
+    if id > len(products):
+        out = "product not available"
+        return PlainTextResponse(status_code=404, content=out, media_type='text/plain')
+    else:
+        product = products[id]
+        out = f'''
+        <head>
+           '{product}'
+        </head>
+        '''
+        return HTMLResponse(content=out, media_type='text/html')
+```
+If id is out of range then we return a plain text response with status code 404, else we return the product as a html
+header. The issue with the above is that the documentation isn't clear, the **Code** section of the docs will not have
+the right information:
+
+![My Image](/rm_images/custom_response_bad.PNG)
+
+To get the correct info we need to add an argument into the `router`:
+```python
+# product.py
+@router.get('/{id}', responses={
+    200: {
+        'content': {
+            'text/html': {
+                'example': '<div>Product</div>'
+                    }
+               },
+        'description': 'returns the html for an object'
+        },
+
+    404: {
+        'content': {
+            'text/plain': {
+                'example': 'product not available'
+                    }
+               },
+        'description': 'a clear text error message'
+        }
+})
+def get_product(id: int):
+...
+```
+This now give the correct documentation in the docs:
+
+![My Image](/rm_images/custom_response_good.PNG)
