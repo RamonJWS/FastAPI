@@ -648,3 +648,27 @@ def get_product(id: int):
 This now give the correct documentation in the docs:
 
 ![My Image](/rm_images/custom_response_good.PNG)
+
+### Headers
+Headers are used to keep meta data about the request and response body of an API. We can create custom headers in
+fastapi:
+```python
+from fastapi import Header
+
+@router.get('/withheader/')
+def get_products(custom_header: Optional[List[str]] = Header(default=None)):
+    return products
+```
+![My Image](/rm_images/header.PNG)
+
+In the swagger docs we can now provide a list of header information which will be added to the response body and request.
+However, we wont be able to see this in header info in the curl and not in the response header... </br>
+To get this info in the response header we need to use `Response` built in model:
+```python
+@router.get('/withheader121/')
+def get_products(response: Response,
+                 custom_header: Optional[List[str]] = Header(default=None)):
+    response.headers['response_custom_header'] = ', '.join(custom_header)
+    return products
+```
+![My Image](/rm_images/header_response.PNG)

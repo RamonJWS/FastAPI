@@ -1,9 +1,6 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, Header
 from fastapi.responses import Response, HTMLResponse, PlainTextResponse
-from schemas import ArticleBase, ArticleDisplay
-from sqlalchemy.orm.session import Session
-from db import db_article
-from db.database import get_db
+from typing import Optional, List
 
 router = APIRouter(
     prefix="/product",
@@ -51,3 +48,14 @@ def get_product(id: int):
         </head>
         '''
         return HTMLResponse(content=out, media_type='text/html')
+
+@router.get('/withheader/')
+def get_products(custom_header: Optional[List[str]] = Header(default=None)):
+    return products
+
+
+@router.get('/withheader121/')
+def get_products(response: Response,
+                 custom_header: Optional[List[str]] = Header(default=None)):
+    response.headers['response_custom_header'] = ', '.join(custom_header)
+    return products
