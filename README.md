@@ -740,3 +740,35 @@ Response Body:
   "test"
 ]
 ```
+### CORS - Cross Origin Resource Sharing
+Used when we're creating an API and an application on your local machine, where the api access the application. </br>
+E.g:
+- running a react frontend on localhost:8080
+- We then try to access the frontend with fastapi at endpoint localhost:8000
+- This will result in: **CORS ERROR**
+
+Essentially the endpoints don't match up </br>
+**FIX**:
+We need to add a CORS middleware to the `main.py` file:
+```python
+# main.py
+from fastapi.middleware.cors import CORSMiddleware
+
+...
+
+origins = [
+    'http://localhost:3000'
+]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=['*'],
+    allow_headers=['*']
+)
+```
+inside origins we specify the endpoint of our local react (or another frontend framework) app. 
+- `allow_credentials` allows cross-origin cookies.
+- `allow_methods` allows all methods e.g. GET, POST.
+- `allow_headers` allows all headers
