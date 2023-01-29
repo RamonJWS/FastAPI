@@ -710,3 +710,33 @@ Response body:
 NOTE: the query parameter (`custom_cookie`) must match the key value of the custom cookie, which is set in
 `reponse.set_cookie(key=...)`
 
+### Form Data
+Forms are HTML data that is collected from the users input. `<form>...</form>` </br>
+We need to handle this data differently because its in a special encoding format (not JSON) </br>
+**Form POST**:
+```python
+# product.py
+from fastapi import Form
+
+@router.post('/new')
+def create_product(name: str = Form(...)):
+    products.append(name)
+    return products
+```
+the Curl `Content-type` will change:
+```
+curl -X 'POST' \
+  'http://127.0.0.1:8000/product/new' \
+  -H 'accept: application/json' \
+  -H 'Content-Type: application/x-www-form-urlencoded' \
+  -d 'name=test'
+```
+Response Body:
+```
+[
+  "watch",
+  "camera",
+  "phone",
+  "test"
+]
+```

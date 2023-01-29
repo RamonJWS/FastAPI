@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Header, Cookie
+from fastapi import APIRouter, Header, Cookie, Form
 from fastapi.responses import Response, HTMLResponse, PlainTextResponse
 from typing import Optional, List, Union
 
@@ -68,3 +68,8 @@ def create_cookie(response: Response):
 @router.get('/getcookie/')
 def get_cookie(custom_cookie: Union[str, None] = Cookie(None)):
     return {'my_cookie': custom_cookie}
+
+@router.post('/new')
+def create_product(name: str = Form(...)):
+    products.append(name)
+    return products
