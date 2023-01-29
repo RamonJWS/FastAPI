@@ -1,6 +1,6 @@
-from fastapi import APIRouter, Header
+from fastapi import APIRouter, Header, Cookie
 from fastapi.responses import Response, HTMLResponse, PlainTextResponse
-from typing import Optional, List
+from typing import Optional, List, Union
 
 router = APIRouter(
     prefix="/product",
@@ -59,3 +59,12 @@ def get_products(response: Response,
                  custom_header: Optional[List[str]] = Header(default=None)):
     response.headers['response_custom_header'] = ', '.join(custom_header)
     return products
+
+@router.get('/createcookie/')
+def create_cookie(response: Response):
+    response.set_cookie(key='custom_cookie', value='cookie_value')
+    return products
+
+@router.get('/getcookie/')
+def get_cookie(custom_cookie: Union[str, None] = Cookie(None)):
+    return {'my_cookie': custom_cookie}

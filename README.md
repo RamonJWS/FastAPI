@@ -672,3 +672,41 @@ def get_products(response: Response,
     return products
 ```
 ![My Image](/rm_images/header_response.PNG)
+
+### Cookies
+- create custom cookies
+- return custom cookies in response body
+
+Cookies store information on the browser, this information can be user identification e.g. usernames and passwords. 
+They can accept almost any data type. </br></br>
+**Create custom cookie**:
+```python
+# product.py
+@router.get('/createcookie/')
+def create_cookie(response: Response):
+    response.set_cookie(key='custom_cookie', value='cookie_value')
+    return products
+```
+Looking in a cookie manager we can see the cookie:
+
+![My Image](/rm_images/cookie.PNG)
+
+**Return custom cookie**:
+```python
+# product.py
+from fastapi import Cookie
+
+@router.get('/getcookie/')
+def get_cookie(custom_cookie: Union[str, None] = Cookie(None)):
+    return {'my_cookie': custom_cookie}
+```
+Response body:
+```json
+{
+  "my_cookie": "cookie_value"
+}
+```
+
+NOTE: the query parameter (`custom_cookie`) must match the key value of the custom cookie, which is set in
+`reponse.set_cookie(key=...)`
+
