@@ -772,3 +772,37 @@ inside origins we specify the endpoint of our local react (or another frontend f
 - `allow_credentials` allows cross-origin cookies.
 - `allow_methods` allows all methods e.g. GET, POST.
 - `allow_headers` allows all headers
+
+## <ins>Authentication</ins>
+For authentication we'll be using **OAuth 2.0** for usernames and passwords. Below is the system process of how this
+works:
+
+![My Image](/rm_images/UserAuth.PNG)
+
+Certain endpoints will be open e.g. creating an account. But others like creating posts and editing
+posts will require authentication.
+
+### Authentication for getting articles:
+
+First create an `OAuth2PasswordBearer`: https://fastapi.tiangolo.com/tutorial/security/first-steps/
+```python
+# outh2.py
+from fastapi.security import OAuth2PasswordBearer
+
+oauth2_schema = OAuth2PasswordBearer(tokenUrl='token')
+```
+Once we've created a bearer to handle the token we can use a `Dependency` to use this bearer in an operation:
+```python
+# article.py
+from auth.outh2 import oauth2_schema
+
+@router.get("/{id}", response_model=ArticleDisplay)
+def get_article(id: int, db: Session = Depends(get_db), token: str = Depends(oauth2_schema)):
+    return db_article.get_article(db, id)
+```
+In the Docs if we try to get an article then we'll get an `Error 401 Unauthorized`! We also have a simple docs UI for
+simulating username and password authentication:
+
+![My Image](/rm_images/DocsAuth.PNG)
+
+We are not verifying the validity of the token yet, but that's a start already.
