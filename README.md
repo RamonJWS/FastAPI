@@ -806,3 +806,76 @@ simulating username and password authentication:
 ![My Image](/rm_images/DocsAuth.PNG)
 
 We are not verifying the validity of the token yet, but that's a start already.
+
+### Create User and Authenticate:
+
+First we need a unique secret key for Oauth. This is done my typing into the terminal: `openssl rand -hex 32`. </br>
+
+We put the secret key inside a .env file with the algorithm string we've chosen. We then define the length of time the
+token remains activated:
+```python
+# oauth2.py
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
+
+load_dotenv()
+SECRET_KEY = os.getenv("OAUTH_SECRET_KEY")
+ALGORITHM = os.getenv("OAUTH_ALGO")
+ACCESS_TOKEN_EXPIRE_MINUTES = 30
+
+
+def create_access_token(data: dict, expires_delta: Optional[timedelta] = None):
+    to_encode = data.copy()
+    if expires_delta:
+        expire = datetime.utcnow() + expires_delta
+    else:
+        expire = datetime.utcnow() + timedelta(minutes=15)
+    to_encode.update({"exp": expire})
+    encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
+    return encoded_jwt, expire
+```
+`ACCESS_TOKEN_EXPIRE_MINUTES` is currently not used. JWT JSON Web Token is a proposed Internet standard for creating
+data with optional signature and/or optional encryption whose payload holds JSON that asserts some number of claims.
+The `create_access_token` is used to create a authentication connection between the token and the user that logged in.
+This connection will expire in 15mins.
+
+The above script is used in `authentication.py` where `create_access_token` is used inside a post method:
+```python
+router = APIRouter(
+    tags=['authentication']
+)
+
+# token here needs to be the same as the OAuth2PasswordBearer(tokenUrl="token")
+@router.post('/token')
+def get_token(request: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)):
+
+    user = db.query(models.DbUser).filter(models.DbUser.username == request.username).first()
+
+    if not user:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail='invalid credentials')
+    if not Hash.verify(user.password, request.password):
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail='incorrect password')
+
+    access_token, expire = outh2.create_access_token(data={"sub": user.username})
+
+    return {'access_token': access_token,
+            'token_expires': expire,
+            'token_type': 'bearer',
+            'user_id': user.id,
+            'user_name': user.username}
+```
+Here we create a request of type `OAuth2PasswordRequestForm` the request type takes in username and password. We then
+get the specific user back from the database, filtering on a username match, there is some exception handelling for 
+username not found and incorrect password. To verify the password we use the `Hash.verify` method which gets and hashes
+the input password and compares that hash to our users hashed password. Then using `create_access_token` we return
+the token for the user.
+
+Then using the 'Authorize' button located at the top right of the docs we can authenticate a user:
+
+![My Image](/rm_images/user_auth.PNG)
+
+Its better to authenticate here as the token will be automatically provided to all the appropriate endpoints of the API.
+We can see now that the articles `/articles/{id}` endpoint now has been authenticated by seeing the little lock icon:
+
+![My Image](/rm_images/little_lock.PNG)
+
+If we try out the endpoint we will see the authentication token in the curl response!
