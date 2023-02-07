@@ -43,3 +43,18 @@ class ArticleDisplay(BaseModel):
     user: User
     class Config:
         orm_mode = True
+
+
+class ArticleUser(BaseModel):
+    id: int
+    published: bool
+    content: str
+    title: str
+    user_id: int
+    class Config:
+        orm_mode = True
+
+
+class ArticleUserDisplay(BaseModel):
+    data: ArticleUser
+    current_user: User

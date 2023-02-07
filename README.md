@@ -879,3 +879,13 @@ We can see now that the articles `/articles/{id}` endpoint now has been authenti
 ![My Image](/rm_images/little_lock.PNG)
 
 If we try out the endpoint we will see the authentication token in the curl response!
+
+### User Authentication for any endpoint:
+
+This is all good and well, but what we're missing is the validation on the token! However, there is one key component
+missing here, and that is when we provide the token from the API user to the token to the API. We also need to verify
+that token to make sure that that token is valid based on the secret key that we have provided here that we
+stored in our system.
+- implement te token verification function.
+- retrieve the user associated with the token.
+- secure more endpoints.
