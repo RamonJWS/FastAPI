@@ -774,47 +774,67 @@ inside origins we specify the endpoint of our local react (or another frontend f
 - `allow_headers` allows all headers
 
 ## <ins>Authentication</ins>
-For authentication we'll be using **OAuth 2.0** for usernames and passwords. Below is the system process of how this
-works:
 
-![My Image](/rm_images/UserAuth.PNG)
+The aim of this section is to allow for users to login from the front end, providing username and password, they will
+then have access to all the endpoints and resources their permissions will allow. They will only have to login once
+per session (or remain logged in for specific time period before being asked to re-enter credentials).
 
-Certain endpoints will be open e.g. creating an account. But others like creating posts and editing
-posts will require authentication.
+This works but the front end holding a payload containing an JWT encoded oAuth2 access token which is linked to the
+username and has an associated expiration data (for other example this could be linked to other bits of unique string
+data).
 
-### Authentication for getting articles:
+### JWT Side Note:
+https://jwt.io/
 
-First create an `OAuth2PasswordBearer`: https://fastapi.tiangolo.com/tutorial/security/first-steps/
-```python
-# outh2.py
-from fastapi.security import OAuth2PasswordBearer
-
-oauth2_schema = OAuth2PasswordBearer(tokenUrl='token')
+JWT stands for Json Web Token and takes the following three encodings:
 ```
-Once we've created a bearer to handle the token we can use a `Dependency` to use this bearer in an operation:
-```python
-# article.py
-from auth.outh2 import oauth2_schema
-
-@router.get("/{id}", response_model=ArticleDisplay)
-def get_article(id: int, db: Session = Depends(get_db), token: str = Depends(oauth2_schema)):
-    return db_article.get_article(db, id)
+eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c
 ```
-In the Docs if we try to get an article then we'll get an `Error 401 Unauthorized`! We also have a simple docs UI for
-simulating username and password authentication:
+The first encoding gives us information about the type and algorithm used to encode it
+```json
+{
+  "alg": "HS256",
+  "typ": "JWT"
+}
+```
+The second is the payload:
+```json
+{
+  "sub": "1234567890",
+  "name": "John Doe",
+  "iat": 1516239022
+}
+```
+The verification signature (handled by oAuth2 in our case)
+```json
+HMACSHA256(
+  base64UrlEncode(header) + "." +
+  base64UrlEncode(payload),
+  OAUTH_SECRET_KEY
+)
+```
 
-![My Image](/rm_images/DocsAuth.PNG)
+### Back to Authentication!
 
-We are not verifying the validity of the token yet, but that's a start already.
+Once logged in the user can access resources without having to constantly authenticate. The API does this by sending
+the authentication payload with each of these requests. The JWT payload can then be verified in the backend by decoding 
+it and matching the usernames. Once authenticated the request operation can continue as normal, e.g. get blog post,
+create new post, delete old post, etc. Its important to note that each request will require this payload username 
+verification before performing its function.
 
-### Create User and Authenticate:
+**The general process can be shown below**
 
-First we need a unique secret key for Oauth. This is done my typing into the terminal: `openssl rand -hex 32`. </br>
+![My Image](/rm_images/oAuth2_and_JWT.jpg)
+The above maps out exactly what is done here: https://fastapi.tiangolo.com/tutorial/security/oauth2-jwt/
 
-We put the secret key inside a .env file with the algorithm string we've chosen. We then define the length of time the
-token remains activated:
+### What does this look like in code:
+
+Starting from the client website login, the user will enter their password and username:
+
 ```python
 # oauth2.py
+from fastapi.security import OAuth2PasswordBearer
+
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
 load_dotenv()
@@ -832,19 +852,11 @@ def create_access_token(data: dict, expires_delta: Optional[timedelta] = None):
     to_encode.update({"exp": expire})
     encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
     return encoded_jwt, expire
-```
-`ACCESS_TOKEN_EXPIRE_MINUTES` is currently not used. JWT JSON Web Token is a proposed Internet standard for creating
-data with optional signature and/or optional encryption whose payload holds JSON that asserts some number of claims.
-The `create_access_token` is used to create a authentication connection between the token and the user that logged in.
-This connection will expire in 15mins.
 
-The above script is used in `authentication.py` where `create_access_token` is used inside a post method:
-```python
-router = APIRouter(
-    tags=['authentication']
-)
 
-# token here needs to be the same as the OAuth2PasswordBearer(tokenUrl="token")
+# authentication.py
+from fastapi.security.oauth2 import OAuth2PasswordRequestForm
+
 @router.post('/token')
 def get_token(request: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)):
 
@@ -863,29 +875,67 @@ def get_token(request: OAuth2PasswordRequestForm = Depends(), db: Session = Depe
             'user_id': user.id,
             'user_name': user.username}
 ```
-Here we create a request of type `OAuth2PasswordRequestForm` the request type takes in username and password. We then
-get the specific user back from the database, filtering on a username match, there is some exception handelling for 
-username not found and incorrect password. To verify the password we use the `Hash.verify` method which gets and hashes
-the input password and compares that hash to our users hashed password. Then using `create_access_token` we return
-the token for the user.
+The username and password is handled by `OAuthPasswordRequestForm`, and a db session is created. We then check to see
+if the user exists in the database, returning exceptions if not, we check that the hashed password matches the hashed
+password found in the db. `create_access_token` is then used to create the JWT encoded payload and the expiry date, 
+finally we turn this as well as other meta data as the payload to the authentication process.
 
-Then using the 'Authorize' button located at the top right of the docs we can authenticate a user:
+**Now that the user has logged in, lets make sure that they can access different endpoints through this login:**
 
-![My Image](/rm_images/user_auth.PNG)
+To allow this process to work we'll use the token payload available to the frontend. As we can see from the above code
+the token is liked with the username, so we need to verify the authenticated token username with our db before completing
+any operations. To do this the `get_current_user` function is used.
 
-Its better to authenticate here as the token will be automatically provided to all the appropriate endpoints of the API.
-We can see now that the articles `/articles/{id}` endpoint now has been authenticated by seeing the little lock icon:
+```python
+# oauth2.py
+def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)):
+    credentials_exception = HTTPException(
+        status_code=status.HTTP_401_UNAUTHORIZED,
+        detail="Couldn't validate credentials",
+        headers={"WWW-Authenticate": "Bearer"}
+    )
+    try:
+        payload = jwt.decode(token, SECRET_KEY, algorithms=ALGORITHM)
+        username: str = payload.get("sub")
+        if username is None:
+            raise credentials_exception
+    except JWTError:
+        raise credentials_exception
 
-![My Image](/rm_images/little_lock.PNG)
+    user = db_user.get_user_by_username(db, username)
 
-If we try out the endpoint we will see the authentication token in the curl response!
+    if user is None:
+        raise credentials_exception
 
-### User Authentication for any endpoint:
+    return user
+```
 
-This is all good and well, but what we're missing is the validation on the token! However, there is one key component
-missing here, and that is when we provide the token from the API user to the token to the API. We also need to verify
-that token to make sure that that token is valid based on the secret key that we have provided here that we
-stored in our system.
-- implement te token verification function.
-- retrieve the user associated with the token.
-- secure more endpoints.
+In our CRUD operations we can now add the `current_user: UserBase = Depends(get_current_user)` dependency to enforce 
+this authentication. E.g. getting articles by id now required authentication:
+
+```python
+# article.py
+@router.get("/{id}", response_model=ArticleUserDisplay)
+def get_article(id: int,
+                db: Session = Depends(get_db),
+                current_user: UserBase = Depends(get_current_user)):
+    return {
+        'data': db_article.get_article(db, id),
+        'current_user': current_user
+    }
+```
+
+with any of these responses we can now see the JWT token in the curl authentication command:
+```curl
+curl -X 'GET' \
+  'http://127.0.0.1:8000/articles/1' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJhdXRodGVzdCIsImV4cCI6MTY3NjEzNDYwNn0.rrAX-GQGvbdFMJcEOgGa4rJFGITRLbJN1tVCpQ0xX9o'
+```
+The payload part of the JWT is:
+```json
+{
+  "sub": "authtest",
+  "exp": 1676134606
+}
+```
