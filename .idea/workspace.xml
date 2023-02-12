@@ -2,13 +2,11 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="90ec47ec-f1d6-47ec-8cff-72906f0396b7" name="Changes" comment="">
+      <change afterPath="$PROJECT_DIR$/router/file.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/README.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/auth/outh2.py" beforeDir="false" afterPath="$PROJECT_DIR$/auth/outh2.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/db/db_user.py" beforeDir="false" afterPath="$PROJECT_DIR$/db/db_user.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/router/article.py" beforeDir="false" afterPath="$PROJECT_DIR$/router/article.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/router/user.py" beforeDir="false" afterPath="$PROJECT_DIR$/router/user.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/schemas.py" beforeDir="false" afterPath="$PROJECT_DIR$/schemas.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/main.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -44,6 +42,7 @@
 }</component>
   <component name="RecentsManager">
     <key name="MoveFile.RECENT_KEYS">
+      <recent name="C:\Users\UKGC\PycharmProjects\FastAPI\files" />
       <recent name="C:\Users\UKGC\PycharmProjects\FastAPI\auth" />
       <recent name="C:\Users\UKGC\PycharmProjects\FastAPI" />
     </key>

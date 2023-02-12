@@ -939,3 +939,89 @@ The payload part of the JWT is:
   "exp": 1676134606
 }
 ```
+
+## <ins>Work with Files</ins>
+
+Its possible to create an endpoint that takes in a file and gives back a response.
+
+```python
+# file.py
+from fastapi import APIRouter, File
+
+@router.post('/lines')
+def get_file(file: bytes = File(...)):
+    content = file.decode('utf-8')
+    lines = content.split('\n')
+    lines = [line.replace('\r', '') for line in lines]
+    return {'lines': lines}
+```
+
+From the docs we can now select a text file to be passed to our server, we can then process the info
+however we want and return info.
+
+The issue with this method is that the files are stored in memory!
+
+To fix this issue we cant use `UploadFile` which stores a certain size in memory and then the rest on disk. this 
+works well for video data.
+
+```python
+# file.py
+@router.post('/uploadfile')
+def get_upload_file(upload_file: UploadFile = File(...)):
+    path = f"files/{upload_file.filename}"
+    # w+b is wright or create
+    with open(path, 'w+b') as buffer:
+        shutil.copyfileobj(upload_file.file, buffer)
+
+    return {
+        'filename': path,
+        'type': upload_file.content_type
+    }
+```
+
+Above the frontend will upload a file e.g. a dog picture, and we'll save it locally into the files
+directory. The response body will be the path the image was save on the server and the 
+type of file.
+
+The issue is that if the file has the same name it will be overwritten!
+
+### Make files statically available online:
+
+First install `pip install aiofiles`
+
+Then in we can add the following code in `main.py`:
+
+```python
+from fastapi.staticfiles import StaticFiles
+
+app.mount('/files', StaticFiles(directory='files'), name='files')
+```
+
+If we then go to our docs URL `http://127.0.0.1:8000/files/dogo.jpg` we can see the picture we previously
+uploaded.
+
+This is very useful when making a static websites!
+
+### Downloading Files:
+
+We've just seen how we cant access files through the endpoint statically, but what if our user wants to download files?
+
+Why do we want to do this? 
+- allows for more logic around file access.
+- provide security, e.g. only authenticated users to access certain files.
+
+To do this we use the `FileResponse` response body type:
+
+```python
+# file.py
+from fastapi.responses import FileResponse
+
+@router.get('/download', response_class=FileResponse)
+def download_files(name: str):
+    path = f'files/{name}'
+    return path
+```
+
+In the docs we can now see the returned image which can be used dynamically in our frontend.
+
+![My Image](/rm_images/dogo.PNG)
