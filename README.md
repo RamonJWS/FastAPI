@@ -1025,3 +1025,21 @@ def download_files(name: str):
 In the docs we can now see the returned image which can be used dynamically in our frontend.
 
 ![My Image](/rm_images/dogo.PNG)
+
+## <ins>Deployment on Deta</ins>
+
+To do this we need to create an account and install Deta locally.
+
+to install deta on a machine use (for windows):
+
+`iwr https://get.deta.dev/cli.ps1 -useb | iex`
+
+Once installed login via the terminal using: `space login`.
+
+Create an access token and save it somewhere safe. Use this to login.
+
+The in the directory of the API project type: `space push` then `space release`
+
+my code is live here!: `https://learningfastapi-3-p9223010.deta.app/docs`
+
+
