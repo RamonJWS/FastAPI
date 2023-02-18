@@ -1,5 +1,15 @@
 # Learning FastAPI
 
+## <ins>Debug</ins>
+To debug fastapi we need to add the following code:
+```python
+if __name__ == "__main__":
+    uvicorn.run(app, host="localhost", port=8000)
+```
+
+`__name__ == "__main__"` will run when calling the module from the command line but not on import.
+We can then put a break point where ever and debug as normal!
+
 ## <ins>Parameters</ins>
 ### Request Body
 **POST** </br>

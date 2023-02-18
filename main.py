@@ -2,6 +2,8 @@
 This is the main file where the app will be running
 """
 
+import uvicorn
+
 from fastapi import FastAPI
 from router import blog_get, blog_posts, user, article, product, file
 from auth import authentication
@@ -47,3 +49,6 @@ app.add_middleware(
 )
 
 app.mount('/files', StaticFiles(directory='files'), name='files')
+
+if __name__ == "__main__":
+    uvicorn.run(app, host="localhost", port=8000)
