@@ -11,12 +11,14 @@ from auth import authentication
 from db import models
 from db.database import engine
 from exceptions import EmailException
+from templates import templates
 from fastapi import Request
 from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 
 app = FastAPI()
+app.include_router(templates.router)
 app.include_router(authentication.router)
 app.include_router(blog_get.router)
 app.include_router(blog_posts.router)
@@ -52,6 +54,9 @@ app.add_middleware(
 app.mount('/files',
           StaticFiles(directory=os.path.join(os.path.dirname(os.path.abspath(__file__)), 'files')),
           name='files')
+app.mount('/templates/static',
+          StaticFiles(directory='templates/static'),
+          name='static')
 
 if __name__ == "__main__":
     uvicorn.run(app, host="127.0.0.1", port=8000)

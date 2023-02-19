@@ -1057,4 +1057,117 @@ my code is live here!: `https://learningfastapi-3-p9223010.deta.app/docs`
 As I have learnt from Powervault testing is SUPER important to stop code degrading and allowing for maintainable code.
 Strive for 100% coverage, but often this is very difficult and probably only possible at big companies.
 
-This can be done easily using the requests and unittest libraries (or pytest).
+This can be done easily using the requests and unittest libraries (or pytest). See the code for more details, its pretty
+simple.
+
+## <ins>Async Await</ins>
+
+This allows for processes that have async await to run concurrently and allow for other less intensive processes
+to be run at the same time. If we didnt use this then the server would get 'blocked' by these large tasks.
+
+The `await` part means that the process can be paused, `async` defines a function with suspendable points.
+
+Imagine that we have a backend process that takes a long time. We can use `async` and `await` to keep the backend
+running with other request while still processing the long one.
+
+```python
+# product.py
+
+async def time_consuming_functionality():
+    time.sleep(5)
+
+
+@router.get('/all')
+async def get_all_products():
+    await time_consuming_functionality()
+    log('myapi', 'call to get all products')
+    data = ' '.join(products)
+    return Response(content=data, media_type='text/plain')
+```
+
+We can split out the functionality that takes time and assign `async` to the function. Then inside the main function 
+`get_all_products` we can use the `await` special term to tell the function to not return the response until it has 
+finished.
+
+## <ins>Templates</ins>
+
+This is when we return a html/css object as our response. e.g. facebook market place people upload productions
+they want to sell, this is then hosted on the website in a format. This can be done through templates. This html 
+returned is integrated into the page and served to the user.
+
+The templating engine will be `jinja2`. To do this we need to create a template on our server, we create a endpoint
+, the user will pass us information which will populate the template and will be served back to them.
+
+**Building a new product template response with css:**
+
+- create a new directory with a python module for the POST operation
+- a html template where our data will be inserted from the POST.
+- a static directory containing a styles css file that will format the html.
+
+```python
+# templates.py
+
+from fastapi.routing import APIRouter
+from fastapi.templating import Jinja2Templates
+from fastapi.responses import HTMLResponse
+from fastapi.requests import Request
+from schemas import ProductBase
+
+router = APIRouter(
+    prefix='/templates',
+    tags=['templates']
+)
+
+templates = Jinja2Templates(directory='templates')
+
+@router.post('/products/{id}', response_class=HTMLResponse)
+def create_new_product(id: str, request: Request, product: ProductBase):
+    return templates.TemplateResponse(
+        'product.html',
+        {
+            'request': request,
+            'id': id,
+            'title': product.title,
+            'description': product.description,
+            'price': product.price
+        }
+    )
+```
+
+Here we'll use Jinja2 as our reponse model. The user will provide an id as a path parameter, and then a product title,
+ description, and price as the request body. This request body is determined by the pydantic base model `ProductBase`.
+The `templates.TemplateResponse` points to our html temple which intern points to the css file.
+
+To keep our website static we need to make the css files statically available to page. This is done in `main.py`:
+
+```python
+# main.py
+
+app.mount('/templates/static',
+          StaticFiles(directory='templates/static'),
+          name='static')
+```
+
+The response from the POST request will be the html template where the header will reference the static css file:
+
+```html
+<head>
+    <link href="http://127.0.0.1:8000/templates/static/styles.css" rel="stylesheet"/>
+</head>
+<body>
+    <div class="tpl_product">
+        <div class="tpl_title">Mac Mini Pro</div>
+        <div class="tpl_description">an incredible mac for almost half price!</div>
+        <div class="tpl_price">1349.99</div>
+    </div>
+</body>
+```
+
+putting this into a html editor we can see the style!:
+
+![My Image](/rm_images/templates.PNG)
+
+
+
+
+

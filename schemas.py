@@ -58,3 +58,9 @@ class ArticleUser(BaseModel):
 class ArticleUserDisplay(BaseModel):
     data: ArticleUser
     current_user: User
+
+
+class ProductBase(BaseModel):
+    title: str
+    description: str
+    price: float
