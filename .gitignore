@@ -6,4 +6,7 @@ __pycache__/
 
 files/*
 !files/.gitkeep
+
 .space
+
+logs/log.txt

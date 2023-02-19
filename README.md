@@ -1052,4 +1052,9 @@ The in the directory of the API project type: `space push` then `space release`
 
 my code is live here!: `https://learningfastapi-3-p9223010.deta.app/docs`
 
+## <ins>Testing</ins>
 
+As I have learnt from Powervault testing is SUPER important to stop code degrading and allowing for maintainable code.
+Strive for 100% coverage, but often this is very difficult and probably only possible at big companies.
+
+This can be done easily using the requests and unittest libraries (or pytest).

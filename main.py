@@ -3,6 +3,7 @@ This is the main file where the app will be running
 """
 
 import uvicorn
+import os
 
 from fastapi import FastAPI
 from router import blog_get, blog_posts, user, article, product, file
@@ -48,7 +49,9 @@ app.add_middleware(
     allow_headers=['*']
 )
 
-app.mount('/files', StaticFiles(directory='files'), name='files')
+app.mount('/files',
+          StaticFiles(directory=os.path.join(os.path.dirname(os.path.abspath(__file__)), 'files')),
+          name='files')
 
 if __name__ == "__main__":
-    uvicorn.run(app, host="localhost", port=8000)
+    uvicorn.run(app, host="127.0.0.1", port=8000)
