@@ -2,7 +2,9 @@ from fastapi.routing import APIRouter
 from fastapi.templating import Jinja2Templates
 from fastapi.responses import HTMLResponse
 from fastapi.requests import Request
+from fastapi import BackgroundTasks
 from schemas import ProductBase
+from logs.logging import log
 
 router = APIRouter(
     prefix='/templates',
@@ -12,7 +14,11 @@ router = APIRouter(
 templates = Jinja2Templates(directory='templates')
 
 @router.post('/products/{id}', response_class=HTMLResponse)
-def create_new_product(id: str, request: Request, product: ProductBase):
+def create_new_product(id: str,
+                       request: Request,
+                       product: ProductBase,
+                       bt: BackgroundTasks):
+    bt.add_task(log_template_call, "creating a new product template")
     return templates.TemplateResponse(
         'product.html',
         {
@@ -23,3 +29,7 @@ def create_new_product(id: str, request: Request, product: ProductBase):
             'price': product.price
         }
     )
+
+
+def log_template_call(message: str):
+    log("MyAPI", message)

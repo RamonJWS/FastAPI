@@ -13,9 +13,11 @@ from db.database import engine
 from exceptions import EmailException
 from templates import templates
 from fastapi import Request
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse, HTMLResponse
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
+from client import html
+from fastapi.websockets import WebSocket
 
 app = FastAPI()
 app.include_router(templates.router)
@@ -26,6 +28,23 @@ app.include_router(user.router)
 app.include_router(article.router)
 app.include_router(product.router)
 app.include_router(file.router)
+
+
+@app.get("/")
+async def get():
+    return HTMLResponse(html)
+
+
+clients = []
+
+@app.websocket("/endpoint")
+async def websocket_endpoint(websocket: WebSocket):
+    await websocket.accept()
+    clients.append(websocket)
+    while True:
+        data = await websocket.receive_text()
+        for client in clients:
+            await client.send_text(data)
 
 
 # this creates the db, only created when the db doesn't exist already.

@@ -1167,7 +1167,83 @@ putting this into a html editor we can see the style!:
 
 ![My Image](/rm_images/templates.PNG)
 
+## <ins>Logs as background tasks</ins>
+
+background tasks are run after returning a response. This is useful when we want to do something after a request but the
+client doesn't have to be waiting around for the operation to complete e.g. logging, email notifications, processing data.
+
+```python
+# templates
+from fastapi import BackgroundTasks
+from logs.logging import log
+
+@router.post('/products/{id}', response_class=HTMLResponse)
+def create_new_product(id: str,
+                       request: Request,
+                       product: ProductBase,
+                       bt: BackgroundTasks):
+    bt.add_task(log_template_call, "creating a new product template")
+
+def log_template_call(message: str):
+    log("MyAPI", message)
+```
+
+Simply add an argument to the CRUD method with type `BackgroundTasks` and then use the method `add_task` this expects a 
+function as the first argument and the arguments of the function as the remaining arguments. Because `add_task` is
+expecting a function we need to create one just to house our log function.
+
+## <ins>WebSockets</ins>
+
+Websockets are a protocal that allow for two-way communication over TCP ip. We can send and receive messages dynamically
+and will stay open as long as we require them.
+
+Websockets would normally be used with a modern framework like React, but for this example im going to use simple html 
+and javascript, see the full code in `client.py` (the javascript part can be seen below):
+
+```html
+...
+        <script>
+            var ws = new WebSocket("ws://localhost:8000/endpoint");
+            ws.onmessage = function(event) {
+                var messages = document.getElementById('messages')
+                var message = document.createElement('li')
+                var content = document.createTextNode(event.data)
+                message.appendChild(content)
+                messages.appendChild(message)
+            };
+            function sendMessage(event) {
+                var input = document.getElementById("messageText")
+                ws.send(input.value)
+                input.value = ''
+                event.preventDefault()
+            }
+        </script>
+...
+```
+Note how the websocket endpoint has been defined, `'/endpoint'` is arbitrary.
+
+The following python code is used to allow for the messaging script to use fastapi:
+
+```python
+# main.py
+from client import html
+from fastapi.websockets import WebSocket
+from fastapi.responses import HTMLResponse
+
+@app.get("/")
+async def get():
+    return HTMLResponse(html)
 
 
+@app.websocket("/endpoint")
+async def websocket_endpoint(websocket: WebSocket):
+    await websocket.accept()
+    while True:
+        data = await websocket.receive_text()
+        await websocket.send_text(f"Message: {data}")
+```
 
+We can now open up multiple tabs and write messages that will populate all the pages at once! The message below was only
+typed in one browser but appears in both.
 
+![My Image](/rm_images/websockets.PNG)
