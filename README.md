@@ -1247,3 +1247,49 @@ We can now open up multiple tabs and write messages that will populate all the p
 typed in one browser but appears in both.
 
 ![My Image](/rm_images/websockets.PNG)
+
+## <ins>Dependencies</ins>
+
+"Dependency Injection" means, in programming, that there is a way for your code (in this case, your path operation functions) to declare things that it requires to work and use: "dependencies".
+
+And then, that system (in this case FastAPI) will take care of doing whatever is needed to provide your code with those needed dependencies ("inject" the dependencies).
+
+This is very useful when you need to:
+
+- Have shared logic (the same code logic again and again).
+- Share database connections.
+- Enforce security, authentication, role requirements, etc.
+- And many other things...
+
+For details on dependencies look at `router/dependencies.py`
+
+### Class Dependencies:
+
+We can use dependencies for classes, the arguments before the `Depends` will be passed into the class:
+
+```python
+# dependencies.py
+
+class Account:
+    def __init__(self, name: str, email: str):
+        self.name = name
+        self.email = email
+
+# account: Account = Depeneds() is the same as account: Account = Depends(Account)
+@router.post('/user')
+def create_new_user(name: str, email: str, password: str, account: Account = Depends()):
+    return {
+        'name': account.name,
+        'email': account.email
+    }
+
+```
+
+Response body:
+
+```json
+{
+  "name": "kek",
+  "email": "kek@kekw.com"
+}
+```

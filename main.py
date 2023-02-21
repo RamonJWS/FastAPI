@@ -6,7 +6,7 @@ import uvicorn
 import os
 
 from fastapi import FastAPI
-from router import blog_get, blog_posts, user, article, product, file
+from router import blog_get, blog_posts, user, article, product, file, dependencies
 from auth import authentication
 from db import models
 from db.database import engine
@@ -20,6 +20,7 @@ from client import html
 from fastapi.websockets import WebSocket
 
 app = FastAPI()
+app.include_router(dependencies.router)
 app.include_router(templates.router)
 app.include_router(authentication.router)
 app.include_router(blog_get.router)
