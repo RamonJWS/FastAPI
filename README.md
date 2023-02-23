@@ -1293,3 +1293,110 @@ Response body:
   "email": "kek@kekw.com"
 }
 ```
+
+### Multi level dependencies:
+
+This is relatively simple, inside the `Depends` function we can use another `Depends`:
+
+```python
+# dependencies.py
+
+def convert_params(request: Request, separator: str):
+    query = []
+    for key, value in request.query_params.items():
+        query.append(f"{key} {separator} {value}")
+    return query
+
+def convert_headers(request: Request, spacing: str, query=Depends(convert_params)):
+    out_header = []
+    for key, value in request.headers.items():
+        out_header.append(f"{key} {spacing} {value}")
+    return {
+        'headers': out_header,
+        'query': query
+    }
+
+
+@router.get('')
+def get_item_show_header(spacing: str = '**', headers=Depends(convert_headers)):
+    return {
+        'item': 'hat',
+        'headers': headers
+    }
+```
+
+We then have parameters `spacing` and `separator` in the documentation.
+
+response:
+
+```json
+{
+  "item": "hat",
+  "headers": {
+    "headers": [
+      "host spacing 127.0.0.1:8000",
+      "connection spacing keep-alive",
+      "sec-ch-ua spacing \"Chromium\";v=\"110\", \"Not A(Brand\";v=\"24\", \"Google Chrome\";v=\"110\"",
+      "accept spacing application/json",
+      "sec-ch-ua-mobile spacing ?0",
+      "user-agent spacing Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/110.0.0.0 Safari/537.36",
+      "sec-ch-ua-platform spacing \"Windows\"",
+      "sec-fetch-site spacing same-origin",
+      "sec-fetch-mode spacing cors",
+      "sec-fetch-dest spacing empty",
+      "referer spacing http://127.0.0.1:8000/docs",
+      "accept-encoding spacing gzip, deflate, br",
+      "accept-language spacing en-GB,en-US;q=0.9,en;q=0.8"
+    ],
+    "query": [
+      "spacing separator spacing",
+      "separator separator separator"
+    ]
+  }
+}
+```
+
+### Global dependencies:
+
+We can add globally dependencies to different endpoints without having to individual add them into the functions. These
+apply to ALL endpoints, we can apply this to either the router or app.
+
+A good example of when we might want to do this is with a logger:
+
+```python
+# dependencies.py
+
+router = APIRouter(
+    prefix='/dependencies',
+    tags=['dependencies'],
+    dependencies=[Depends(log)]
+)
+
+# logging.py
+
+from fastapi.requests import Request
+
+def log(tag='MyApp', message='no message', request: Request = None):
+    with open('logs/log.txt', 'a+') as log:
+        log.write(f'{tag}: {message}\n')
+        log.write(f'\t{request.url}\n')
+```
+
+Now all the endpoints in 'dependencies' will depend on the logger! 
+
+example: Using `get_item_show_header`:
+
+```txt
+# log.txt
+
+MyApp: no message
+	http://127.0.0.1:8000/dependencies?spacing=%20&tag=MyApp&message=no%20message&separator=--
+```
+
+To do this for all endpoints add it into the app arguments:
+
+```python
+# main.py
+
+app = FastAPI(dependencies=[Depends(log)])
+```

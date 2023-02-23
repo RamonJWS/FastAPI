@@ -1,16 +1,28 @@
 from fastapi import APIRouter, Depends
 from fastapi.requests import Request
+from logs.logging import log
 
 router = APIRouter(
     prefix='/dependencies',
-    tags=['dependencies']
+    tags=['dependencies'],
+    dependencies=[Depends(log)]
 )
 
-def convert_headers(request: Request, spacing: str):
+
+def convert_params(request: Request, separator: str):
+    query = []
+    for key, value in request.query_params.items():
+        query.append(f"{key} {separator} {value}")
+    return query
+
+def convert_headers(request: Request, spacing: str, query=Depends(convert_params)):
     out_header = []
     for key, value in request.headers.items():
         out_header.append(f"{key} {spacing} {value}")
-    return out_header
+    return {
+        'headers': out_header,
+        'query': query
+    }
 
 
 @router.get('')
